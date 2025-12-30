@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude AI Interactive Training - OA-Y Module 6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary: #7C3AED;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+            --bg-dark: #1E1E1E;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 48px 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .header-subtitle {
+            font-size: 1.25em;
+            opacity: 0.95;
+            margin-bottom: 24px;
+        }
+
+        .course-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 10px 24px;
+            border-radius: 9999px;
+            font-size: 0.95em;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            background: var(--light);
+            padding: 32px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.875em;
+            color: #6B7280;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .progress-section {
+            padding: 24px 32px;
+            background: var(--light);
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #E5E7EB;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #059669);
+            transition: width 0.6s;
+            width: 0%;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            min-height: 750px;
+        }
+
+        .file-explorer {
+            background: var(--bg-dark);
+            color: #CCCCCC;
+            padding: 24px;
+            border-right: 1px solid #2D2D2D;
+            overflow-y: auto;
+        }
+
+        .explorer-header {
+            color: #FFFFFF;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #3E3E42;
+            font-weight: 600;
+        }
+
+        .explorer-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .explorer-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .explorer-btn.new-folder {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .explorer-btn.new-file {
+            background: #7C3AED;
+            color: white;
+        }
+
+        .explorer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .folder {
+            margin: 4px 0;
+            user-select: none;
+        }
+
+        .folder-header {
+            padding: 6px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+
+        .folder-header:hover {
+            background: #2A2D2E;
+        }
+
+        .folder-header:hover .copy-path-btn {
+            opacity: 1;
+        }
+
+        .folder-icon {
+            font-size: 1.1em;
+            width: 16px;
+        }
+
+        .folder.expanded > .folder-header .folder-icon::before {
+            content: '📂';
+        }
+
+        .folder.collapsed > .folder-header .folder-icon::before {
+            content: '📁';
+        }
+
+        .folder-name {
+            font-size: 0.9em;
+        }
+
+        .folder-content {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .folder.expanded > .folder-content {
+            display: block;
+        }
+
+        .file {
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .file:hover {
+            background: #2A2D2E;
+        }
+
+        .file.selected {
+            background: #094771;
+            color: white;
+        }
+
+        .file-icon::before {
+            content: '📄';
+            margin-right: 4px;
+        }
+
+        .file-name {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .copy-path-btn {
+            opacity: 0;
+            background: #094771;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file:hover .copy-path-btn {
+            opacity: 1;
+        }
+
+        .copy-path-btn:hover {
+            background: #0B5A8F;
+        }
+
+        .workspace {
+            padding: 40px;
+            background: #FAFAFA;
+            overflow-y: auto;
+        }
+
+        .task-card {
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .task-header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .task-number {
+            color: var(--primary);
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .task-title {
+            font-size: 2.25em;
+            color: var(--dark);
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 0.875em;
+            font-weight: 600;
+        }
+
+        .difficulty-easy { background: #D1FAE5; color: #065F46; }
+        .difficulty-medium { background: #FEF3C7; color: #92400E; }
+        .difficulty-hard { background: #FEE2E2; color: #991B1B; }
+
+        .task-objective {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid var(--warning);
+            margin-bottom: 32px;
+        }
+
+        .task-objective h4 {
+            color: var(--warning);
+            margin-bottom: 12px;
+            font-size: 1.125em;
+            font-weight: 600;
+        }
+
+        .task-steps {
+            background: var(--light);
+            padding: 28px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+
+        .task-steps h4 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.125em;
+            font-weight: 600;
+        }
+
+        .step {
+            padding: 16px;
+            margin: 12px 0;
+            background: white;
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+        }
+
+        .step-number {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .note-box {
+            background: #EFF6FF;
+            border-left: 4px solid var(--info);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 0.95em;
+        }
+
+        .note-box strong {
+            color: var(--info);
+        }
+
+        .copied-path-display {
+            background: var(--bg-dark);
+            color: #D4D4D4;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            margin: 24px 0;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            border: 2px solid #3E3E42;
+        }
+
+        .copied-path-display.empty {
+            color: #6B7280;
+            font-style: italic;
+        }
+
+        .prompt-workspace {
+            margin-top: 32px;
+        }
+
+        .workspace-label {
+            font-size: 1.25em;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 16px;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 20px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1em;
+            resize: vertical;
+            transition: all 0.3s;
+            background: #FAFAFA;
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.875em;
+            color: #6B7280;
+            margin-top: 8px;
+        }
+
+        .hint-panel {
+            background: #FFFBEB;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 24px 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .hint-toggle {
+            background: none;
+            border: none;
+            color: var(--warning);
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+        }
+
+        .hint-content {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .hint-content.visible {
+            display: block;
+        }
+
+        .hint-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .hint-list li {
+            padding: 12px 0;
+            padding-left: 32px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .hint-list li::before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .feedback-panel {
+            margin-top: 32px;
+            padding: 28px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .feedback-panel.visible {
+            display: block;
+        }
+
+        .feedback-panel.success {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            border: 2px solid var(--success);
+        }
+
+        .feedback-panel.error {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            border: 2px solid var(--error);
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-icon {
+            font-size: 2.5em;
+        }
+
+        .feedback-title {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .requirements-check {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .requirement-item {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .requirement-item.met {
+            background: #D1FAE5;
+            border-left: 4px solid var(--success);
+        }
+
+        .requirement-item.not-met {
+            background: #FEE2E2;
+            border-left: 4px solid var(--error);
+        }
+
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--dark);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            max-width: 400px;
+        }
+
+        .notification.visible {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 48px;
+            border-radius: 24px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .completion-icon {
+            font-size: 5em;
+            margin-bottom: 24px;
+        }
+
+        .modal-content h2 {
+            font-size: 2.5em;
+            color: var(--success);
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #D1D5DB;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: var(--primary);
+            transform: scale(1.5);
+        }
+
+        .progress-dot.completed {
+            background: var(--success);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.4s;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .file-explorer {
+                max-height: 400px;
+                border-right: none;
+                border-bottom: 1px solid #2D2D2D;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Claude AI Interactive Training</h1>
+            <div class="header-subtitle">Hands-On Practice Lab - Real-World Workflow Simulation</div>
+            <div class="course-badge">
+                <span>📚</span>
+                <span>Getting Started with Claude AI (2025) - Module 6: Practical Skills</span>
+            </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); border-left: 4px solid #F59E0B; padding: 20px 40px; border-bottom: 1px solid #F59E0B;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="font-size: 2em;">⚠️</div>
+                <div>
+                    <div style="font-weight: 700; color: #92400E; font-size: 1.1em; margin-bottom: 8px;">
+                        🔄 This Module Is Constantly Updated!
+                    </div>
+                    <div style="color: #78350F; font-size: 0.95em; line-height: 1.6;">
+                        <strong>Important:</strong> MAIN_PROMPT (currently v8.0), file structure, Task Manager, and naming conventions may change at any time.
+                        <br>
+                        <strong>Always check:</strong> Discord #news and #daily channels | Ask your Team Lead | Contact HR if documentation seems outdated.
+                        <br>
+                        <strong>This is a learning tool</strong> - not a 100% final standard. Stay updated through official company channels!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-label">Current Task</div>
+                <div class="stat-value" id="currentTask">1/5</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Completed</div>
+                <div class="stat-value" style="color: var(--success)" id="completedCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-label">Attempts</div>
+                <div class="stat-value" style="color: var(--error)" id="attemptCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="scoreValue">0%</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="file-explorer">
+                <div class="explorer-header">📁 DROPBOX EXPLORER</div>
+                <div class="explorer-actions">
+                    <button class="explorer-btn new-folder" onclick="createNewFolderInExplorer()">
+                        📁 New Folder
+                    </button>
+                    <button class="explorer-btn new-file" onclick="createNewFileInExplorer()">
+                        📄 New File
+                    </button>
+                </div>
+                <div id="fileTree"></div>
+            </div>
+
+            <div class="workspace" id="workspaceArea"></div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <div class="modal-overlay" id="completionModal">
+        <div class="modal-content">
+            <div class="completion-icon">🎉</div>
+            <h2>Congratulations!</h2>
+            <p style="font-size: 1.2em; color: #6B7280; margin-bottom: 32px;">
+                You've completed all practical exercises!
+            </p>
+            <div style="background: var(--light); padding: 32px; border-radius: 16px; margin: 24px 0;">
+                <h3 style="color: var(--primary); margin-bottom: 20px;">Your Performance</h3>
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 0.875em; color: #6B7280;">Tasks</div>
+                        <div style="font-size: 2em; font-weight: 700; color: var(--primary);" id="finalTasks">0/5</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.875em; color: #6B7280;">Attempts</div>
+                        <div style="font-size: 2em; font-weight: 700; color: var(--error);" id="finalAttempts">0</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.875em; color: #6B7280;">Success Rate</div>
+                        <div style="font-size: 2em; font-weight: 700; color: var(--success);" id="finalRate">0%</div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="location.reload()">
+                <span>🔄 Practice Again</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== FILE SYSTEM WITH CORRECT STRUCTURE =====
+        const fileSystem = {
+            name: 'Dropbox',
+            path: 'C:\\Users\\38096\\Dropbox',
+            type: 'folder',
+            children: [
+                {
+                    name: 'HR',
+                    path: 'C:\\Users\\38096\\Dropbox\\HR',
+                    type: 'folder',
+                    children: [
+                        {
+                            name: 'MAIN_PROMPT_v8.0.md',
+                            path: 'C:\\Users\\38096\\Dropbox\\HR\\MAIN_PROMPT_v8.0.md',
+                            type: 'file'
+                        },
+                        {
+                            name: 'EMP-XXXXX_Employee Name',
+                            path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name',
+                            type: 'folder',
+                            children: [
+                                {
+                                    name: 'Week_05',
+                                    path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05',
+                                    type: 'folder',
+                                    children: [
+                                        {
+                                            name: '29',
+                                            path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\29',
+                                            type: 'folder',
+                                            children: [
+                                                { name: '29_daily.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\29\\29_daily.md', type: 'file' },
+                                                { name: '29_todo.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\29\\29_todo.md', type: 'file' },
+                                                { name: '29_notes.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\29\\29_notes.md', type: 'file' }
+                                            ]
+                                        },
+                                        {
+                                            name: '30',
+                                            path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\30',
+                                            type: 'folder',
+                                            children: [
+                                                { name: '30_daily.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\30\\30_daily.md', type: 'file' },
+                                                { name: '30_todo.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\30\\30_todo.md', type: 'file' },
+                                                { name: '30_notes.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\30\\30_notes.md', type: 'file' }
+                                            ]
+                                        },
+                                        { name: 'weekly_report.md', path: 'C:\\Users\\38096\\Dropbox\\HR\\EMP-XXXXX_Employee Name\\Week_05\\weekly_report.md', type: 'file' }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: 'ENTITIES_2.0',
+                    path: 'C:\\Users\\38096\\Dropbox\\ENTITIES_2.0',
+                    type: 'folder',
+                    children: [
+                        {
+                            name: 'TASK_MANAGERS',
+                            path: 'C:\\Users\\38096\\Dropbox\\ENTITIES_2.0\\TASK_MANAGERS',
+                            type: 'folder',
+                            children: [
+                                { name: 'README.md', path: 'C:\\Users\\38096\\Dropbox\\ENTITIES_2.0\\TASK_MANAGERS\\README.md', type: 'file' },
+                                { name: 'QUICK_START.md', path: 'C:\\Users\\38096\\Dropbox\\ENTITIES_2.0\\TASK_MANAGERS\\QUICK_START.md', type: 'file' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: 'Projects',
+                    path: 'C:\\Users\\38096\\Dropbox\\Projects',
+                    type: 'folder',
+                    children: [
+                        { name: 'notes.md', path: 'C:\\Users\\38096\\Dropbox\\Projects\\notes.md', type: 'file' },
+                        { name: 'ideas.md', path: 'C:\\Users\\38096\\Dropbox\\Projects\\ideas.md', type: 'file' }
+                    ]
+                }
+            ]
+        };
+
+        // ===== TASKS WITH UPDATED TASK 2 =====
+        const tasks = [
+            {
+                id: 1,
+                title: "Find and Read Your Daily File",
+                difficulty: "easy",
+                objective: "Navigate the file explorer, locate your daily report file, hover and click 'Copy Path', and write a prompt to read it.",
+                steps: [
+                    "Expand folders in the file explorer to find your employee folder",
+                    "Navigate to Week_05 folder, then into day folder (29 or 30)",
+                    "Find the file named 'DD_daily.md' (DD = 29, 30, etc.)",
+                    "HOVER over the file → click 'Copy Path' button → path copies to clipboard!",
+                    "Write a clear prompt asking Claude to read that specific file"
+                ],
+                requirements: {
+                    mustInclude: ['read', 'daily.md'],
+                    mustHavePath: true,
+                    minLength: 25
+                },
+                hints: [
+                    "File naming: Week_05/29/29_daily.md (Week → Day folder → Files)",
+                    "DD folder = day number (29, 30), files inside have same prefix",
+                    "HOVER over the file → 'Copy Path' button appears → click it",
+                    "Path is copied to REAL clipboard (you can Ctrl+V it anywhere!)",
+                    "The copied path also appears in the display area below",
+                    "Start your prompt with: 'Read file:' followed by the path"
+                ]
+            },
+            {
+                id: 2,
+                title: "Create TODO and Weekly Report Using Company Standards",
+                difficulty: "medium",
+                objective: "Use MAIN_PROMPT for correct task naming (TSK-XXX format) and Task Manager folder to check existing tasks, then create your TODO list and weekly report.",
+                steps: [
+                    "Find 'MAIN_PROMPT_v8.0.md' in HR folder → hover → click 'Copy Path'",
+                    "Find TASK_MANAGERS folder in ENTITIES_2.0/ → hover on folder → click 'Copy Path'",
+                    "Write ONE prompt that:",
+                    "  1) References MAIN_PROMPT to format tasks correctly (TSK-XXX, MLS-XXX)",
+                    "  2) References TASK_MANAGERS folder to check existing task names",
+                    "  3) Creates todo.md with properly formatted tasks",
+                    "  4) Creates weekly_report.md with summary"
+                ],
+                requirements: {
+                    mustInclude: ['main_prompt', 'task_managers', 'todo'],
+                    mustHavePath: true,
+                    mustHaveMultiplePaths: true,
+                    minLength: 100
+                },
+                hints: [
+                    "MAIN_PROMPT shows HOW to name tasks (TSK-XXX for tasks, MLS-XXX for milestones)",
+                    "Task Manager folder shows EXISTING tasks - use same names to avoid duplicates!",
+                    "Why? One task = one name everywhere. If TSK-001 exists, use it, don't create TSK-NEW",
+                    "Copy BOTH paths: MAIN_PROMPT file + TASK_MANAGERS folder",
+                    "Your prompt should say: use MAIN_PROMPT format + check TASK_MANAGERS for existing tasks"
+                ]
+            },
+            {
+                id: 3,
+                title: "Create a Summary Prompt Template",
+                difficulty: "medium",
+                objective: "Design a reusable prompt template for creating daily summaries. This template will be saved and reused later.",
+                steps: [
+                    "Think about what makes a good daily summary (work done, time, blockers, next steps)",
+                    "Write a prompt template that can be used for ANY day's summary",
+                    "Template should include: sections to cover, format, required information",
+                    "Make it generic (use 'DD_daily.md' not specific day number)",
+                    "Request Claude to save this template as 'summary_prompt_template.md'"
+                ],
+                requirements: {
+                    mustInclude: ['create', 'template', 'summary'],
+                    mustMentionSections: true,
+                    minLength: 80
+                },
+                hints: [
+                    "Template = reusable pattern, not specific to one day",
+                    "Good summary includes: what was done, time spent, problems, next steps",
+                    "Use placeholders like 'DD' or '[day]' instead of specific numbers",
+                    "Template should explain HOW to create summary, not create one now",
+                    "Save location: can be in Projects/ or create new Prompts/ folder"
+                ]
+            },
+            {
+                id: 4,
+                title: "Create Prompts Folder and Save Template",
+                difficulty: "hard",
+                objective: "Create a dedicated folder for storing prompt templates and save your summary template there.",
+                steps: [
+                    "Use the 'New Folder' button below to create folder (or ask Claude to create it)",
+                    "Name it 'Prompts' in your Dropbox root or Projects folder",
+                    "Write a prompt asking Claude to:",
+                    "  1) Create folder C:\\Users\\38096\\Dropbox\\Prompts (if not using button)",
+                    "  2) Save your summary template from Task 3 as 'summary_template.md'",
+                    "  3) Add instructions inside the template file"
+                ],
+                requirements: {
+                    mustInclude: ['create', 'folder', 'save', 'template'],
+                    mustHavePath: true,
+                    mustHaveMultiplePaths: true,
+                    minLength: 100
+                },
+                hints: [
+                    "You can create folder using the button OR ask Claude in your prompt",
+                    "Path format: C:\\Users\\38096\\Dropbox\\Prompts\\summary_template.md",
+                    "Template file should contain the prompt instructions from Task 3",
+                    "This creates a reusable library of prompts!",
+                    "Later you can create more templates: todo_template.md, report_template.md, etc."
+                ]
+            },
+            {
+                id: 5,
+                title: "Use Saved Template to Create Today's Summary",
+                difficulty: "hard",
+                objective: "Read your saved prompt template and use it to create a summary for today (day 30).",
+                steps: [
+                    "Find your saved template: Prompts/summary_template.md",
+                    "Hover → Copy Path to the template file",
+                    "Find today's daily file: Week_05/30/30_daily.md",
+                    "Hover → Copy Path to the daily file",
+                    "Write ONE prompt that:",
+                    "  1) Reads the template to see HOW to create summary",
+                    "  2) Reads 30_daily.md to see WHAT work was done",
+                    "  3) Creates 30_summary.md following the template format"
+                ],
+                requirements: {
+                    mustInclude: ['read', 'template', 'create', 'summary'],
+                    mustHaveMultipleSteps: true,
+                    mustHavePath: true,
+                    mustHaveMultiplePaths: true,
+                    minLength: 120
+                },
+                hints: [
+                    "This is a real workflow: template (HOW) + data (WHAT) → output",
+                    "Need 2 paths: template file + daily file",
+                    "Template shows structure, daily file has the content",
+                    "Output: 30_summary.md in Week_05/30/ folder",
+                    "Reusable approach: same template works for day 29, 30, 31, etc."
+                ]
+            }
+        ];
+
+        let currentTaskIndex = 0;
+        let completedTasks = 0;
+        let attempts = 0;
+        let copiedPath = '';
+
+        function init() {
+            renderFileTree();
+            renderTask(currentTaskIndex);
+            updateStats();
+        }
+
+        function renderFileTree(node = fileSystem, container = document.getElementById('fileTree'), level = 0) {
+            if (node.type === 'folder') {
+                const folderDiv = document.createElement('div');
+                folderDiv.className = 'folder collapsed';
+
+                const header = document.createElement('div');
+                header.className = 'folder-header';
+                header.innerHTML = `
+                    <span class="folder-icon"></span>
+                    <span class="folder-name">${node.name}</span>
+                    ${node.path ? '<button class="copy-path-btn">Copy Path</button>' : ''}
+                `;
+
+                const content = document.createElement('div');
+                content.className = 'folder-content';
+
+                // Add copy button functionality if folder has a path
+                if (node.path) {
+                    const copyBtn = header.querySelector('.copy-path-btn');
+                    if (copyBtn) {
+                        copyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            copyPath(node.path);
+                        };
+                    }
+                }
+
+                // Click on folder name/icon to toggle expand
+                const folderIcon = header.querySelector('.folder-icon');
+                const folderName = header.querySelector('.folder-name');
+                [folderIcon, folderName].forEach(el => {
+                    el.onclick = () => folderDiv.classList.toggle('expanded');
+                });
+
+                if (node.children) {
+                    node.children.forEach(child => renderFileTree(child, content, level + 1));
+                }
+
+                folderDiv.appendChild(header);
+                folderDiv.appendChild(content);
+                container.appendChild(folderDiv);
+            } else {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file';
+                fileDiv.dataset.path = node.path;
+                fileDiv.innerHTML = `
+                    <span class="file-icon"></span>
+                    <span class="file-name">${node.name}</span>
+                    <button class="copy-path-btn">Copy Path</button>
+                `;
+
+                // Click on copy button
+                const copyBtn = fileDiv.querySelector('.copy-path-btn');
+                copyBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    copyPath(node.path);
+                };
+
+                // Click on file to select
+                fileDiv.onclick = (e) => {
+                    if (e.target !== copyBtn) {
+                        document.querySelectorAll('.file').forEach(f => f.classList.remove('selected'));
+                        fileDiv.classList.add('selected');
+                    }
+                };
+
+                container.appendChild(fileDiv);
+            }
+        }
+
+        function copyPath(path) {
+            // Create temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = path;
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-9999px';
+            textarea.style.left = '-9999px';
+            textarea.setAttribute('readonly', '');
+            document.body.appendChild(textarea);
+
+            // Select and copy
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            try {
+                const successful = document.execCommand('copy');
+                copiedPath = path;
+
+                if (successful) {
+                    showNotification(`✅ Path copied!\n${path}`);
+                } else {
+                    showNotification(`✅ Path saved!\n${path}`);
+                }
+                updateCopiedPathDisplay();
+            } catch (err) {
+                copiedPath = path;
+                showNotification(`✅ Path saved!\n${path}`);
+                updateCopiedPathDisplay();
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('visible');
+            setTimeout(() => notification.classList.remove('visible'), 3000);
+        }
+
+        function updateCopiedPathDisplay() {
+            const display = document.querySelector('.copied-path-display');
+            if (display) {
+                if (copiedPath) {
+                    display.textContent = copiedPath;
+                    display.classList.remove('empty');
+                } else {
+                    display.textContent = '📋 No path copied yet... RIGHT-CLICK on a file → Copy Path';
+                    display.classList.add('empty');
+                }
+            }
+        }
+
+        function renderTask(index) {
+            const task = tasks[index];
+            const workspace = document.getElementById('workspaceArea');
+
+            let additionalNote = '';
+            if (task.id === 1) {
+                additionalNote = `
+                    <div class="note-box">
+                        <strong>📌 File Structure:</strong><br>
+                        <code>Week_05/29/29_daily.md</code><br>
+                        └─week─┘ └day┘ └─file──┘<br>
+                        Week 5 → Day 29 folder → daily report file
+                    </div>
+                `;
+            } else if (task.id === 2) {
+                additionalNote = `
+                    <div class="note-box">
+                        <strong>📌 Why We Use These Systems:</strong><br><br>
+                        <strong>🎯 MAIN_PROMPT v8.0:</strong> Shows HOW to name tasks correctly<br>
+                        • Defines task formats: TSK-XXX (tasks), MLS-XXX (milestones)<br>
+                        • Ensures everyone follows the same naming rules<br>
+                        • Example: "TSK-001: Setup project" not "Task 1: Setup"<br><br>
+
+                        <strong>📊 Task Manager (ENTITIES_2.0/TASK_MANAGERS):</strong> Shows EXISTING tasks<br>
+                        • Central database of all company tasks<br>
+                        • Prevents duplicates: check if a task already exists<br>
+                        • <strong>One task = one name everywhere!</strong><br>
+                        • If TSK-001 exists, use it. Don't create "TSK-NEW" for the same work<br><br>
+
+                        <strong>✅ Your Workflow:</strong><br>
+                        1. Check MAIN_PROMPT → learn correct naming format<br>
+                        2. Check Task Manager folder → see existing task names<br>
+                        3. Create TODO using correct format + avoid duplicates<br>
+                        4. Create Weekly Report with summary
+                    </div>
+                `;
+            } else if (task.id === 3) {
+                additionalNote = `
+                    <div class="note-box">
+                        <strong>📌 What is a Prompt Template?</strong><br><br>
+                        A <strong>template</strong> is a reusable instruction pattern:<br>
+                        • ❌ NOT a one-time prompt for today's summary<br>
+                        • ✅ A general guide that works for ANY day<br>
+                        • Contains structure, sections, format requirements<br>
+                        • Can be saved and reused multiple times<br><br>
+                        <strong>Example:</strong><br>
+                        "Create summary with: Work Done, Time Spent, Blockers, Next Steps"<br>
+                        → This works for day 29, 30, 31, any day!
+                    </div>
+                `;
+            } else if (task.id === 4) {
+                additionalNote = `
+                    <div class="note-box">
+                        <strong>📌 Building Your Prompt Library:</strong><br><br>
+                        Creating a <strong>Prompts folder</strong> helps you:<br>
+                        • Store reusable prompt templates<br>
+                        • Standardize your workflow<br>
+                        • Save time on repetitive tasks<br>
+                        • Share templates with team members<br><br>
+                        <strong>Future templates you might create:</strong><br>
+                        • todo_template.md → for daily task lists<br>
+                        • meeting_notes_template.md → for meetings<br>
+                        • code_review_template.md → for reviews
+                    </div>
+                `;
+            } else if (task.id === 5) {
+                additionalNote = `
+                    <div class="note-box">
+                        <strong>📌 Template-Based Workflow:</strong><br><br>
+                        This is how professionals work:<br>
+                        1️⃣ <strong>Template</strong> (saved) = HOW to structure output<br>
+                        2️⃣ <strong>Data</strong> (daily file) = WHAT content to use<br>
+                        3️⃣ <strong>Result</strong> (summary) = Formatted output<br><br>
+                        <strong>Why this approach?</strong><br>
+                        • Consistency across all summaries<br>
+                        • No need to remember format each time<br>
+                        • Same quality every day<br>
+                        • Easy to improve: update template once, benefit forever
+                    </div>
+                `;
+            }
+
+            workspace.innerHTML = `
+                <div class="progress-dots">
+                    ${tasks.map((_, i) => `
+                        <div class="progress-dot ${i < index ? 'completed' : i === index ? 'active' : ''}"></div>
+                    `).join('')}
+                </div>
+
+                <div class="task-card">
+                    <div class="task-header">
+                        <div class="task-number">Task ${task.id} of ${tasks.length}</div>
+                        <div class="task-title">${task.title}</div>
+                        <span class="difficulty-badge difficulty-${task.difficulty}">
+                            ${task.difficulty.toUpperCase()}
+                        </span>
+                    </div>
+
+                    <div class="task-objective">
+                        <h4>🎯 Your Mission:</h4>
+                        <p>${task.objective}</p>
+                    </div>
+
+                    ${additionalNote}
+
+                    <div class="task-steps">
+                        <h4>📋 Steps to Complete:</h4>
+                        ${task.steps.map((step, i) => `
+                            <div class="step">
+                                <span class="step-number">Step ${i + 1}:</span> ${step}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="copied-path-display ${copiedPath ? '' : 'empty'}">
+                        ${copiedPath || '📋 No path copied yet... RIGHT-CLICK on a file → Copy Path'}
+                    </div>
+
+                    <div class="prompt-workspace">
+                        <div class="workspace-label">✍️ Write Your Prompt:</div>
+                        <textarea
+                            class="prompt-textarea"
+                            id="promptInput"
+                            placeholder="Think about what Claude needs to know... Be specific!"
+                            oninput="updateCharCount()"
+                        ></textarea>
+                        <div class="char-counter" id="charCounter">0 characters</div>
+                    </div>
+
+                    <div class="hint-panel">
+                        <button class="hint-toggle" onclick="toggleHints()">
+                            <span>💡</span>
+                            <span>Need help? Click for hints</span>
+                        </button>
+                        <div class="hint-content" id="hintContent">
+                            <ul class="hint-list">
+                                ${task.hints.map(hint => `<li>${hint}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="submitPrompt()">✓ Submit Prompt</button>
+                        <button class="btn btn-secondary" onclick="clearPrompt()">↻ Clear</button>
+                        <button class="btn btn-danger" onclick="resetPath()">✗ Reset Path</button>
+                    </div>
+
+                    ${task.id >= 4 ? `
+                        <div style="margin-top: 24px; padding: 20px; background: #F3F4F6; border-radius: 12px; border-left: 4px solid var(--info);">
+                            <div style="font-weight: 600; margin-bottom: 12px; color: var(--info);">💡 Tip:</div>
+                            <div style="font-size: 0.9em; color: #6B7280; line-height: 1.6;">
+                                Use the <strong>📁 New Folder</strong> and <strong>📄 New File</strong> buttons in the file explorer (left side) to create new items.
+                                After creating, you can hover and copy their paths!
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="feedback-panel" id="feedbackPanel"></div>
+                </div>
+            `;
+
+            updateCopiedPathDisplay();
+        }
+
+        function toggleHints() {
+            document.getElementById('hintContent').classList.toggle('visible');
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('promptInput');
+            const counter = document.getElementById('charCounter');
+            counter.textContent = `${input.value.length} characters`;
+        }
+
+        function clearPrompt() {
+            document.getElementById('promptInput').value = '';
+            updateCharCount();
+        }
+
+        function resetPath() {
+            copiedPath = '';
+            updateCopiedPathDisplay();
+            showNotification('Path cleared');
+        }
+
+        function submitPrompt() {
+            const task = tasks[currentTaskIndex];
+            const prompt = document.getElementById('promptInput').value.trim();
+            attempts++;
+            updateStats();
+
+            if (!prompt) {
+                showFeedback(false, "Please write a prompt before submitting!", []);
+                return;
+            }
+
+            const results = validatePrompt(prompt, task);
+
+            if (results.passed) {
+                completedTasks++;
+                showFeedback(true, "Excellent work! Your prompt is well-structured!", results.details);
+                setTimeout(() => {
+                    if (currentTaskIndex < tasks.length - 1) {
+                        currentTaskIndex++;
+                        copiedPath = '';
+                        renderTask(currentTaskIndex);
+                        updateStats();
+                    } else {
+                        showCompletionModal();
+                    }
+                }, 3000);
+            } else {
+                showFeedback(false, "Not quite there yet. Review the requirements:", results.details);
+                document.querySelector('.task-card').classList.add('shake');
+                setTimeout(() => document.querySelector('.task-card').classList.remove('shake'), 400);
+            }
+        }
+
+        function validatePrompt(prompt, task) {
+            const results = { passed: true, details: [] };
+            const lowerPrompt = prompt.toLowerCase();
+
+            task.requirements.mustInclude.forEach(keyword => {
+                const found = lowerPrompt.includes(keyword.toLowerCase());
+                results.details.push({
+                    requirement: `Include keyword: "${keyword}"`,
+                    met: found
+                });
+                if (!found) results.passed = false;
+            });
+
+            if (task.requirements.mustHavePath) {
+                const hasPath = prompt.includes('C:\\') || prompt.includes('c:\\');
+                results.details.push({
+                    requirement: 'Include full file path (C:\\...)',
+                    met: hasPath
+                });
+                if (!hasPath) results.passed = false;
+            }
+
+            if (task.requirements.mustHaveMultiplePaths) {
+                const pathCount = (prompt.match(/C:\\/gi) || []).length;
+                const hasMultiple = pathCount >= 2;
+                results.details.push({
+                    requirement: `Include multiple paths (need 2+, found ${pathCount})`,
+                    met: hasMultiple
+                });
+                if (!hasMultiple) results.passed = false;
+            }
+
+            if (task.requirements.mustMentionTaskManager) {
+                const hasTaskManager = lowerPrompt.includes('task manager') ||
+                                      lowerPrompt.includes('task_manager') ||
+                                      lowerPrompt.includes('taskmanager') ||
+                                      prompt.includes('TASK_MANAGERS');
+                results.details.push({
+                    requirement: 'Mention Task Manager system',
+                    met: hasTaskManager
+                });
+                if (!hasTaskManager) results.passed = false;
+            }
+
+            if (task.requirements.mustRequestOutput) {
+                const hasOutput = lowerPrompt.includes('summary') || lowerPrompt.includes('analyze');
+                results.details.push({
+                    requirement: 'Request specific analysis/output',
+                    met: hasOutput
+                });
+                if (!hasOutput) results.passed = false;
+            }
+
+            if (task.requirements.mustSpecifyUpdate) {
+                const hasUpdate = lowerPrompt.includes('add') || lowerPrompt.includes('append');
+                results.details.push({
+                    requirement: 'Specify what/how to update',
+                    met: hasUpdate
+                });
+                if (!hasUpdate) results.passed = false;
+            }
+
+            if (task.requirements.mustHaveMultipleSteps) {
+                const hasSteps = (prompt.match(/\d\./g) || []).length >= 2;
+                results.details.push({
+                    requirement: 'Include multiple clear steps',
+                    met: hasSteps
+                });
+                if (!hasSteps) results.passed = false;
+            }
+
+            if (task.requirements.mustMentionSections) {
+                const hasSections = lowerPrompt.includes('section') ||
+                                   lowerPrompt.includes('format') ||
+                                   lowerPrompt.includes('structure');
+                results.details.push({
+                    requirement: 'Mention sections or format structure',
+                    met: hasSections
+                });
+                if (!hasSections) results.passed = false;
+            }
+
+            if (prompt.length < task.requirements.minLength) {
+                results.details.push({
+                    requirement: `Minimum ${task.requirements.minLength} characters (you have ${prompt.length})`,
+                    met: false
+                });
+                results.passed = false;
+            } else {
+                results.details.push({
+                    requirement: `Sufficient detail (${prompt.length} characters)`,
+                    met: true
+                });
+            }
+
+            return results;
+        }
+
+        function createNewFolderInExplorer() {
+            const folderName = prompt('Enter folder name (e.g., "Prompts"):');
+            if (!folderName) return;
+
+            // Create folder in Dropbox root
+            const newFolder = {
+                name: folderName,
+                path: `C:\\Users\\38096\\Dropbox\\${folderName}`,
+                type: 'folder',
+                children: []
+            };
+
+            // Add to fileSystem
+            fileSystem.children.push(newFolder);
+
+            // Refresh file tree
+            const fileTreeContainer = document.getElementById('fileTree');
+            fileTreeContainer.innerHTML = '';
+            renderFileTree();
+
+            showNotification(`✅ Folder created: ${folderName}\nYou can now hover and copy its path!`);
+        }
+
+        function createNewFileInExplorer() {
+            const fileName = prompt('Enter file name (e.g., "summary_template.md"):');
+            if (!fileName) return;
+
+            const parentFolder = prompt('Enter parent folder name (e.g., "Prompts", "Projects", or leave empty for Dropbox root):');
+
+            let targetFolder = fileSystem;
+            let filePath = `C:\\Users\\38096\\Dropbox\\${fileName}`;
+
+            // If parent folder specified, try to find it
+            if (parentFolder) {
+                const findFolder = (node, name) => {
+                    if (node.type === 'folder' && node.name === name) {
+                        return node;
+                    }
+                    if (node.children) {
+                        for (let child of node.children) {
+                            const found = findFolder(child, name);
+                            if (found) return found;
+                        }
+                    }
+                    return null;
+                };
+
+                const found = findFolder(fileSystem, parentFolder);
+                if (found) {
+                    targetFolder = found;
+                    filePath = `${found.path}\\${fileName}`;
+                } else {
+                    showNotification(`⚠️ Folder "${parentFolder}" not found. Creating file in Dropbox root instead.`);
+                }
+            }
+
+            // Create file
+            const newFile = {
+                name: fileName,
+                path: filePath,
+                type: 'file'
+            };
+
+            // Add to target folder
+            if (!targetFolder.children) {
+                targetFolder.children = [];
+            }
+            targetFolder.children.push(newFile);
+
+            // Refresh file tree
+            const fileTreeContainer = document.getElementById('fileTree');
+            fileTreeContainer.innerHTML = '';
+            renderFileTree();
+
+            showNotification(`✅ File created: ${fileName}\nYou can now hover and copy its path!`);
+        }
+
+        function showFeedback(success, message, details) {
+            const feedback = document.getElementById('feedbackPanel');
+            feedback.className = `feedback-panel visible ${success ? 'success' : 'error'}`;
+
+            feedback.innerHTML = `
+                <div class="feedback-header">
+                    <div class="feedback-icon">${success ? '✅' : '❌'}</div>
+                    <div class="feedback-title">${success ? 'Perfect!' : 'Try Again'}</div>
+                </div>
+                <p>${message}</p>
+                <div class="requirements-check">
+                    <h5>Requirements Checklist:</h5>
+                    ${details.map(d => `
+                        <div class="requirement-item ${d.met ? 'met' : 'not-met'}">
+                            <span>${d.met ? '✓' : '✗'}</span>
+                            <span>${d.requirement}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function updateStats() {
+            document.getElementById('currentTask').textContent = `${currentTaskIndex + 1}/${tasks.length}`;
+            document.getElementById('completedCount').textContent = completedTasks;
+            document.getElementById('attemptCount').textContent = attempts;
+
+            const score = completedTasks === 0 ? 0 : Math.round((completedTasks / attempts) * 100);
+            document.getElementById('scoreValue').textContent = score + '%';
+
+            const progress = (completedTasks / tasks.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showCompletionModal() {
+            const modal = document.getElementById('completionModal');
+            modal.classList.add('visible');
+
+            const successRate = Math.round((completedTasks / attempts) * 100);
+
+            document.getElementById('finalTasks').textContent = `${completedTasks}/${tasks.length}`;
+            document.getElementById('finalAttempts').textContent = attempts;
+            document.getElementById('finalRate').textContent = successRate + '%';
+        }
+
+        init();
+    </script>
+</body>
+</html>
